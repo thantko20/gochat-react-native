@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { View } from "react-native";
 import useAuthStore from "./stores/useAuthStore";
+import api from "./lib/api";
 
 const Stack = createStackNavigator();
 
@@ -21,9 +22,16 @@ export default function App() {
   const { isSignedIn, setAuthState } = useAuthStore();
 
   useEffect(() => {
+    let interceptorId: number;
     const retrieveToken = async () => {
       try {
         const t = await AsyncStorage.getItem("accessToken");
+
+        interceptorId = api.interceptors.request.use(function (config) {
+          config.headers.Authorization = `Bearer ${t}`;
+          return config;
+        });
+
         setAuthState(t);
       } finally {
         setIsRetrievingToken(false);
@@ -31,6 +39,10 @@ export default function App() {
     };
 
     retrieveToken();
+
+    return () => {
+      api.interceptors.request.eject(interceptorId);
+    };
   }, []);
 
   if (isRetrievingToken) {
