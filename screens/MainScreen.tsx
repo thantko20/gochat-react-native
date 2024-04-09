@@ -1,45 +1,48 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ScrollView, View } from "react-native";
-import { Button, Text } from "react-native-paper";
-import useAuthStore from "../stores/useAuthStore";
+import { ScrollView, View, TouchableOpacity } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { useQuery } from "@tanstack/react-query";
-import { AxiosError } from "axios";
-import api from "../lib/api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { pb } from "../lib/pocketbase";
+import { User } from "../types/user";
+import { Button, Text } from "tamagui";
 
 const MainScreen = ({
   navigation
 }: {
   navigation: StackNavigationProp<any>;
 }) => {
-  const { logout } = useAuthStore();
   const { data } = useQuery({
     queryKey: ["users"],
-    queryFn: () =>
-      api
-        .get<{ data: { id: number; username: string }[] }>("/users")
-        .then((res) => res.data)
+    queryFn: () => pb.collection("users").getList<User>(1, 50)
   });
+
+  const queryClient = useQueryClient();
 
   return (
     <View>
       <Button
         onPress={async () => {
-          logout();
-          await AsyncStorage.removeItem("accessToken");
-          navigation.navigate("Auth", { screen: "Login" });
+          queryClient.removeQueries();
+          pb.authStore.clear();
         }}
-        mode="contained-tonal"
       >
         Log Out
       </Button>
 
       {data ? (
         <ScrollView>
-          {data.data?.map((u) => (
-            <View key={u.id}>
+          {data.items?.map((u) => (
+            <TouchableOpacity
+              key={u.username}
+              style={{
+                padding: 16,
+                width: "100%"
+              }}
+              onPress={() => {
+                navigation.navigate("Chat", { userId: u.id, name: u.name });
+              }}
+            >
               <Text>{u.username}</Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       ) : null}

@@ -1,11 +1,11 @@
 import { StyleSheet, View } from "react-native";
-import { Text, Button } from "react-native-paper";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "../schemas/auth.schema";
 import { useRegisterMutation } from "../api/auth";
 import Input from "../components/Input";
+import { Button, Text } from "tamagui";
 
 export default function RegisterScreen({
   navigation
@@ -27,6 +27,9 @@ export default function RegisterScreen({
     mutate(data, {
       onSuccess: () => {
         navigation.navigate("Login");
+      },
+      onError: (err) => {
+        alert(err.message);
       }
     });
   });
@@ -35,7 +38,6 @@ export default function RegisterScreen({
     <View style={styles.container}>
       <View style={styles.formContainer}>
         <Text
-          variant="headlineMedium"
           style={{
             fontWeight: "700",
             marginBottom: 16
@@ -84,9 +86,7 @@ export default function RegisterScreen({
             />
           )}
         />
-        <Button onPress={onRegister} mode="contained" loading={isPending}>
-          Register
-        </Button>
+        <Button onPress={onRegister}>Register</Button>
         <View
           style={{
             flexDirection: "row",

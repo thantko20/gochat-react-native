@@ -1,21 +1,19 @@
 import { View, StyleSheet } from "react-native";
-import { Text, Button } from "react-native-paper";
 import { StackNavigationProp } from "@react-navigation/stack";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import useAuthStore from "../stores/useAuthStore";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "../schemas/auth.schema";
 import { useEffect } from "react";
 import Input from "../components/Input";
 import { useLoginMutation } from "../api/auth";
+import { Button, H2, H3, Heading, Text, YStack } from "tamagui";
 
 const LoginScreen = ({
   navigation
 }: {
   navigation: StackNavigationProp<any>;
 }) => {
-  const { login } = useAuthStore();
+  // const { login } = useAuthStore();
 
   const form = useForm({
     resolver: zodResolver(loginSchema),
@@ -29,10 +27,9 @@ const LoginScreen = ({
 
   const onLogin = form.handleSubmit((data) => {
     mutate(data, {
-      onSuccess: async (data) => {
-        await AsyncStorage.setItem("accessToken", data.accessToken);
-        login(data.accessToken);
-      },
+      // onSuccess: async (data) => {
+      //   login(data.token);
+      // },
       onError: (error) => {
         console.error(error);
       }
@@ -45,17 +42,8 @@ const LoginScreen = ({
 
   return (
     <View style={styles.container}>
-      <View style={styles.formContainer}>
-        <Text
-          variant="headlineMedium"
-          style={{
-            fontWeight: "700",
-            alignSelf: "flex-start",
-            marginBottom: 16
-          }}
-        >
-          Login
-        </Text>
+      <YStack gap="$2">
+        <H2>Login</H2>
         <Controller
           control={form.control}
           name="username"
@@ -84,7 +72,7 @@ const LoginScreen = ({
             />
           )}
         />
-        <Button onPress={onLogin} mode="contained" loading={isPending}>
+        <Button onPress={onLogin} disabled={isPending} marginTop="$4">
           Login
         </Button>
         <View
@@ -103,7 +91,7 @@ const LoginScreen = ({
             Register
           </Button>
         </View>
-      </View>
+      </YStack>
     </View>
   );
 };

@@ -1,12 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
 import api from "../lib/api";
+import { pb } from "../lib/pocketbase";
 
 export const useLoginMutation = () =>
   useMutation({
     mutationFn: async (data: { username: string; password: string }) => {
-      return api
-        .post<{ accessToken: string }>("/auth/login", data)
-        .then((res) => res.data);
+      return pb
+        .collection("users")
+        .authWithPassword(data.username, data.password);
     }
   });
 
@@ -17,6 +18,8 @@ export const useRegisterMutation = () =>
       name: string;
       password: string;
     }) => {
-      return api.post("/auth/register", data).then((res) => res.data);
+      return pb
+        .collection("users")
+        .create({ ...data, passwordConfirm: data.password });
     }
   });

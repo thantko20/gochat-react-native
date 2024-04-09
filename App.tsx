@@ -2,63 +2,55 @@ import "react-native-gesture-handler";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import { PaperProvider, Text } from "react-native-paper";
 import AuthStackNavigator from "./navigation/AuthStackNavigator";
 import { QueryClientProvider } from "@tanstack/react-query";
 import queryClient from "./lib/react-query";
 import { createStackNavigator } from "@react-navigation/stack";
 import MainScreen from "./screens/MainScreen";
-import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { View } from "react-native";
+import { useEffect } from "react";
 import useAuthStore from "./stores/useAuthStore";
-import api from "./lib/api";
+import { pb } from "./lib/pocketbase";
+import ChatScreen from "./screens/ChatScreen";
+import { config } from "@tamagui/config/v3";
+import { createTamagui, TamaguiProvider } from "tamagui";
+import { themes } from "./styles/theme";
+import { useFonts } from "expo-font";
+
+const appConfig = createTamagui({ ...config, themes });
+
+export type AppConfig = typeof appConfig;
+
+declare module "tamagui" {
+  // or '@tamagui/core'
+  // overrides TamaguiCustomConfig so your custom types
+  // work everywhere you import `tamagui`
+  interface TamaguiCustomConfig extends AppConfig {}
+}
 
 const Stack = createStackNavigator();
 
 export default function App() {
-  const [isRetrievingToken, setIsRetrievingToken] = useState(true);
+  const { user, onAuthChange } = useAuthStore();
 
-  const { isSignedIn, setAuthState } = useAuthStore();
+  const [loaded] = useFonts({
+    Inter: require("@tamagui/font-inter/otf/Inter-Medium.otf"),
+    InterBold: require("@tamagui/font-inter/otf/Inter-Bold.otf")
+  });
 
   useEffect(() => {
-    let interceptorId: number;
-    const retrieveToken = async () => {
-      try {
-        const t = await AsyncStorage.getItem("accessToken");
-
-        interceptorId = api.interceptors.request.use(function (config) {
-          config.headers.Authorization = `Bearer ${t}`;
-          return config;
-        });
-
-        setAuthState(t);
-      } finally {
-        setIsRetrievingToken(false);
-      }
-    };
-
-    retrieveToken();
-
-    return () => {
-      api.interceptors.request.eject(interceptorId);
-    };
+    return pb.authStore.onChange(onAuthChange);
   }, []);
 
-  if (isRetrievingToken) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Getting token</Text>
-      </View>
-    );
+  if (!loaded) {
+    return null;
   }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <PaperProvider>
+      <TamaguiProvider config={appConfig} defaultTheme="light_green">
         <NavigationContainer>
           <Stack.Navigator initialRouteName="Auth">
-            {!isSignedIn ? (
+            {!user ? (
               <Stack.Screen
                 name="Auth"
                 component={AuthStackNavigator}
@@ -67,12 +59,21 @@ export default function App() {
                 }}
               ></Stack.Screen>
             ) : (
-              <Stack.Screen name="Main" component={MainScreen}></Stack.Screen>
+              <>
+                <Stack.Screen name="Main" component={MainScreen}></Stack.Screen>
+                <Stack.Screen
+                  name="Chat"
+                  component={ChatScreen}
+                  options={({ route }) => ({
+                    title: (route.params as { name: string })?.name || "Chat"
+                  })}
+                ></Stack.Screen>
+              </>
             )}
           </Stack.Navigator>
           <StatusBar style="auto" />
         </NavigationContainer>
-      </PaperProvider>
+      </TamaguiProvider>
     </QueryClientProvider>
   );
 }

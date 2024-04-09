@@ -1,18 +1,21 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
+import { pb } from "../lib/pocketbase";
+import { AuthModel } from "pocketbase";
+import { User } from "../types/user";
 
-const useAuthStore = create<{
-  isSignedIn: boolean;
+type AuthStoreState = {
+  user: User | null;
   token: string | null;
-  login: (token: string) => void;
-  setAuthState: (token: string | null) => void;
-  logout: () => void;
-}>((set) => ({
-  isSignedIn: false,
-  token: null,
-  setAuthState: (token: string | null) =>
-    set(() => ({ token, isSignedIn: Boolean(token) })),
-  login: (token: string) => set(() => ({ isSignedIn: true, token })),
-  logout: () => set(() => ({ isSignedIn: false, token: null }))
+  isLoadingAuth: boolean;
+  onAuthChange: (token: string, model: AuthModel) => void;
+};
+
+const useAuthStore = create<AuthStoreState>((set) => ({
+  user: pb.authStore.model as User,
+  token: pb.authStore.token,
+  isLoadingAuth: true,
+  onAuthChange: (token, model) => set(() => ({ token, user: model as User }))
 }));
 
 export default useAuthStore;

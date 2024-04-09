@@ -1,23 +1,21 @@
 import { ComponentProps } from "react";
-import { View } from "react-native";
-import { HelperText, TextInput } from "react-native-paper";
+import { Label, Input as TInput, YStack } from "tamagui";
 
-type Props = Omit<ComponentProps<typeof TextInput>, "error"> & {
+type Props = Omit<ComponentProps<typeof TInput>, "error"> & {
   error?: string | boolean;
+  label?: string;
 };
 
-const Input = ({ error, ...props }: Props) => {
+const Input = ({ error, label, ...props }: Props) => {
   return (
-    <View>
-      <TextInput {...props} error={Boolean(error)} />
-      <HelperText
-        type="error"
-        visible={typeof error === "string" && !!error}
-        padding="none"
-      >
-        {error}
-      </HelperText>
-    </View>
+    <YStack gap={1}>
+      {label && (
+        <Label fontSize="$5" fontWeight={"700"}>
+          {label}
+        </Label>
+      )}
+      <TInput {...props} />
+    </YStack>
   );
 };
 
