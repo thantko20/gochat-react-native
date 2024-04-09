@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { pb } from "../lib/pocketbase";
-import { User } from "../types/user";
 import { Message } from "../types/message";
+import { ListResult } from "pocketbase";
 
 export const useGetMessages = (query: {
   userOrChatId: string;
@@ -15,7 +15,66 @@ export const useGetMessages = (query: {
     queryFn: () =>
       pb.collection("messages").getList<Message>(page, perPage, {
         filter: `(chat.users.id ?= '${userOrChatId}' && chat.type = 'normal') || chat.users.id ?= '${userOrChatId}'`,
-        expand: "sender"
+        expand: "sender",
+        sort: "-created"
       })
+  });
+};
+
+export const useSendMesssage = (cachedQueryKey: any) => {
+  const queryClient = useQueryClient();
+  const key = ["messages", cachedQueryKey];
+  return useMutation({
+    mutationFn: async ({
+      senderId,
+      receiverId,
+      message
+    }: {
+      receiverId: string;
+      senderId: string;
+      message: string;
+    }) => {
+      if (!message) return;
+
+      return pb.collection("messages").create(
+        {
+          receiver: receiverId,
+          sender: senderId,
+          body: message
+        },
+        {
+          expand: "sender"
+        }
+      );
+    },
+    onMutate: async (newMessage) => {
+      await queryClient.cancelQueries({ queryKey: key });
+
+      const prev = queryClient.getQueryData(key);
+
+      queryClient.setQueryData(key, (old: ListResult<Message>) => {
+        console.log({ old, newMessage });
+        return {
+          ...old,
+          items: [
+            {
+              ...newMessage,
+              body: newMessage.message,
+              sender: newMessage.senderId,
+              isSending: true
+            },
+            ...old.items
+          ]
+        };
+      });
+
+      return { prev };
+    },
+    onError: (err, newMessage, context) => {
+      queryClient.setQueryData(key, context?.prev);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: key });
+    }
   });
 };

@@ -1,5 +1,6 @@
 import "react-native-gesture-handler";
 
+import eventSource from "react-native-sse";
 import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import AuthStackNavigator from "./navigation/AuthStackNavigator";
@@ -15,6 +16,9 @@ import { config } from "@tamagui/config/v3";
 import { createTamagui, TamaguiProvider } from "tamagui";
 import { themes } from "./styles/theme";
 import { useFonts } from "expo-font";
+
+//@ts-ignore
+global.EventSource = eventSource;
 
 const appConfig = createTamagui({ ...config, themes });
 

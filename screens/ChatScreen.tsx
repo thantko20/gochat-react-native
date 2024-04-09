@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import useAuthStore from "../stores/useAuthStore";
-import { useGetMessages } from "../api/messages";
+import { useGetMessages, useSendMesssage } from "../api/messages";
 import { Button, Input, Text, View, XStack, YStack } from "tamagui";
 import { Message as TMessage } from "../types/message";
 import { User } from "../types/user";
 import { pb } from "../lib/pocketbase";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Message = ({
   message,
@@ -21,6 +22,7 @@ const Message = ({
       borderRadius="$4"
       width="50%"
       alignSelf={user?.id === message.sender ? "flex-end" : "flex-start"}
+      opacity={message.isSending ? 0.7 : 1}
     >
       <Text>{message.body}</Text>
     </View>
@@ -33,15 +35,37 @@ const ChatScreen = ({ route, navigation }: any) => {
   const [message, setMessage] = useState("");
 
   const { user } = useAuthStore();
+  console.log({ receiverId: userId, senderId: user?.id });
 
   const { data: messages, isLoading } = useGetMessages({
     userOrChatId: userId
   });
 
-  const onSend = () => {
+  const { mutateAsync } = useSendMesssage({
+    userOrChatId: userId
+  });
+
+  useEffect(() => {
+    pb.collection("messages").subscribe("*", function (e) {
+      console.log(e.action);
+      console.log(e.record);
+    });
+    return () => {
+      (async () => {
+        await pb.collection("messages").unsubscribe("*");
+      })();
+    };
+  }, []);
+
+  const onSend = async () => {
     if (!message) return;
 
-    pb.collection("messages").create({});
+    await mutateAsync({
+      message,
+      receiverId: userId,
+      senderId: user!.id
+    });
+    setMessage("");
   };
 
   return (
@@ -52,14 +76,20 @@ const ChatScreen = ({ route, navigation }: any) => {
         flexDirection="column-reverse"
         paddingHorizontal="$2"
         paddingVertical="$2"
+        gap="$2"
       >
         {messages?.items.map((message) => (
           <Message key={message.id} message={message} user={user} />
         ))}
       </YStack>
       <XStack gap={12} padding="$4" bg="white">
-        <Input flex={1} placeholder="say hi!" />
-        <Button onPress={() => alert("sent!")}>Send</Button>
+        <Input
+          flex={1}
+          placeholder="say hi!"
+          value={message}
+          onChangeText={setMessage}
+        />
+        <Button onPress={onSend}>Send</Button>
       </XStack>
     </View>
   );
