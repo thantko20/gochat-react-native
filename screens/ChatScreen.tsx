@@ -5,7 +5,11 @@ import { Button, Input, Text, View, XStack, YStack } from "tamagui";
 import { Message as TMessage } from "../types/message";
 import { User } from "../types/user";
 import { pb } from "../lib/pocketbase";
-import { useQueryClient } from "@tanstack/react-query";
+import {
+  ClientResponseError,
+  RecordModel,
+  RecordSubscription
+} from "pocketbase";
 
 const Message = ({
   message,
@@ -35,24 +39,40 @@ const ChatScreen = ({ route, navigation }: any) => {
   const [message, setMessage] = useState("");
 
   const { user } = useAuthStore();
-  console.log({ receiverId: userId, senderId: user?.id });
 
   const { data: messages, isLoading } = useGetMessages({
-    userOrChatId: userId
+    userOrChatId: userId,
+    currentUserId: user?.id
   });
 
   const { mutateAsync } = useSendMesssage({
-    userOrChatId: userId
+    userOrChatId: userId,
+    currentUserId: user?.id
   });
 
   useEffect(() => {
-    pb.collection("messages").subscribe("*", function (e) {
-      console.log(e.action);
-      console.log(e.record);
-    });
+    const subscriptionHandler = (data: RecordSubscription<RecordModel>) => {
+      console.log(data.action);
+    };
+
+    const initSubscription = async () => {
+      try {
+        console.log("Connecting to event source");
+        await pb.collection("messages").subscribe("*", subscriptionHandler);
+        console.log("Real time subscription has been initialized");
+      } catch (reason) {
+        if (reason instanceof ClientResponseError) {
+          console.log("Realtime error: ", reason.toJSON());
+        }
+      }
+    };
+
+    initSubscription();
+
     return () => {
       (async () => {
         await pb.collection("messages").unsubscribe("*");
+        console.log("Unsubscribed");
       })();
     };
   }, []);

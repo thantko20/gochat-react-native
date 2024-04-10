@@ -5,6 +5,7 @@ import { ListResult } from "pocketbase";
 
 export const useGetMessages = (query: {
   userOrChatId: string;
+  currentUserId?: string;
   perPage?: number;
   page?: number;
 }) => {
@@ -53,7 +54,6 @@ export const useSendMesssage = (cachedQueryKey: any) => {
       const prev = queryClient.getQueryData(key);
 
       queryClient.setQueryData(key, (old: ListResult<Message>) => {
-        console.log({ old, newMessage });
         return {
           ...old,
           items: [
@@ -71,6 +71,7 @@ export const useSendMesssage = (cachedQueryKey: any) => {
       return { prev };
     },
     onError: (err, newMessage, context) => {
+      console.log({ err });
       queryClient.setQueryData(key, context?.prev);
     },
     onSettled: () => {

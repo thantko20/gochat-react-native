@@ -1,6 +1,6 @@
+import "./sse-polyfill";
 import "react-native-gesture-handler";
 
-import eventSource from "react-native-sse";
 import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import AuthStackNavigator from "./navigation/AuthStackNavigator";
@@ -17,9 +17,6 @@ import { createTamagui, TamaguiProvider } from "tamagui";
 import { themes } from "./styles/theme";
 import { useFonts } from "expo-font";
 
-//@ts-ignore
-global.EventSource = eventSource;
-
 const appConfig = createTamagui({ ...config, themes });
 
 export type AppConfig = typeof appConfig;
@@ -34,7 +31,7 @@ declare module "tamagui" {
 const Stack = createStackNavigator();
 
 export default function App() {
-  const { user, onAuthChange } = useAuthStore();
+  const { user, onAuthChange, token } = useAuthStore();
 
   const [loaded] = useFonts({
     Inter: require("@tamagui/font-inter/otf/Inter-Medium.otf"),
