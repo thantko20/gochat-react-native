@@ -1,5 +1,7 @@
 // @ts-nocheck
 
+// From https://github.com/remy/polyfills/blob/master/EventSource.js
+// Add opts parameter as an extension
 (function (global) {
   if ("EventSource" in global) return;
 
@@ -202,4 +204,4 @@
 
   if ("module" in global) module.exports = EventSource;
   global.EventSource = EventSource;
-})(global);
+})(globalThis);

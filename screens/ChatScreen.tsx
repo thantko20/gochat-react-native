@@ -7,9 +7,11 @@ import { User } from "../types/user";
 import { pb } from "../lib/pocketbase";
 import {
   ClientResponseError,
+  ListResult,
   RecordModel,
   RecordSubscription
 } from "pocketbase";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Message = ({
   message,
@@ -40,19 +42,36 @@ const ChatScreen = ({ route, navigation }: any) => {
 
   const { user } = useAuthStore();
 
-  const { data: messages, isLoading } = useGetMessages({
+  const filters = {
     userOrChatId: userId,
     currentUserId: user?.id
-  });
+  };
 
-  const { mutateAsync } = useSendMesssage({
-    userOrChatId: userId,
-    currentUserId: user?.id
-  });
+  const key = ["message", filters];
+
+  const { data: messages, isLoading, refetch } = useGetMessages(filters);
+
+  const { mutateAsync } = useSendMesssage(filters);
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    const subscriptionHandler = (data: RecordSubscription<RecordModel>) => {
+    const subscriptionHandler = (data: RecordSubscription<TMessage>) => {
       console.log(data.action);
+      console.log(data.record);
+      if (data.record.sender !== user?.id) {
+        const exist = queryClient.getQueryData(key);
+        if (!exist) {
+          refetch();
+          return;
+        }
+        queryClient.setQueryData(key, (old: ListResult<TMessage>) => {
+          return {
+            ...old,
+            items: [data.record, ...old?.items]
+          };
+        });
+      }
     };
 
     const initSubscription = async () => {

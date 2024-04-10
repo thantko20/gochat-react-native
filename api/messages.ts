@@ -55,10 +55,10 @@ export const useSendMesssage = (cachedQueryKey: any) => {
 
       queryClient.setQueryData(key, (old: ListResult<Message>) => {
         return {
-          ...old,
           items: [
             {
               ...newMessage,
+              id: Date.now(),
               body: newMessage.message,
               sender: newMessage.senderId,
               isSending: true
