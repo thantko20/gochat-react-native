@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from "react";
 import useAuthStore from "../stores/useAuthStore";
 import { useGetMessages, useSendMesssage } from "../api/messages";
-import { Button, Input, Text, View, XStack, YStack } from "tamagui";
 import { Message as TMessage } from "../types/message";
 import { User } from "../types/user";
 import { pb } from "../lib/pocketbase";
 import {
   ClientResponseError,
   ListResult,
-  RecordModel,
   RecordSubscription
 } from "pocketbase";
 import { useQueryClient } from "@tanstack/react-query";
+import { View, Text, TextInput, Button } from "react-native";
 
 const Message = ({
   message,
@@ -23,12 +22,7 @@ const Message = ({
   return (
     <View
       key={message.id}
-      padding="$2"
-      bg="$green4Light"
-      borderRadius="$4"
-      width="50%"
-      alignSelf={user?.id === message.sender ? "flex-end" : "flex-start"}
-      opacity={message.isSending ? 0.7 : 1}
+      className="p-2 bg-green-100 rounded-sm w-1/2 self-start"
     >
       <Text>{message.body}</Text>
     </View>
@@ -110,26 +104,20 @@ const ChatScreen = ({ route, navigation }: any) => {
   return (
     <View flex={1}>
       {isLoading ? <Text>Loading Chat!</Text> : null}
-      <YStack
-        flex={1}
-        flexDirection="column-reverse"
-        paddingHorizontal="$2"
-        paddingVertical="$2"
-        gap="$2"
-      >
+      <View className="flex-1 flex-col-reverse p-2 gap-2">
         {messages?.items.map((message) => (
           <Message key={message.id} message={message} user={user} />
         ))}
-      </YStack>
-      <XStack gap={12} padding="$4" bg="white">
-        <Input
-          flex={1}
+      </View>
+      <View className="gap-12 p-4 bg-white" gap={12} padding="$4" bg="white">
+        <TextInput
+          className="flex-1"
           placeholder="say hi!"
           value={message}
           onChangeText={setMessage}
         />
-        <Button onPress={onSend}>Send</Button>
-      </XStack>
+        <Button onPress={onSend} title="Send" />
+      </View>
     </View>
   );
 };

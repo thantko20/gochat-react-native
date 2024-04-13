@@ -1,11 +1,10 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Text, Button } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "../schemas/auth.schema";
 import { useRegisterMutation } from "../api/auth";
 import Input from "../components/Input";
-import { Button, Text } from "tamagui";
 
 export default function RegisterScreen({
   navigation
@@ -86,7 +85,7 @@ export default function RegisterScreen({
             />
           )}
         />
-        <Button onPress={onRegister}>Register</Button>
+        <Button onPress={onRegister} title="Register" />
         <View
           style={{
             flexDirection: "row",
@@ -99,9 +98,8 @@ export default function RegisterScreen({
             onPress={() => {
               navigation.navigate("Login");
             }}
-          >
-            Sign In
-          </Button>
+            title="Login"
+          />
         </View>
       </View>
     </View>

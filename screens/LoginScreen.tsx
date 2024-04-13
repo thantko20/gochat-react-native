@@ -1,4 +1,4 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text, Button } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,7 +6,6 @@ import { loginSchema } from "../schemas/auth.schema";
 import { useEffect } from "react";
 import Input from "../components/Input";
 import { useLoginMutation } from "../api/auth";
-import { Button, H2, H3, Heading, Text, YStack } from "tamagui";
 
 const LoginScreen = ({
   navigation
@@ -42,8 +41,8 @@ const LoginScreen = ({
 
   return (
     <View style={styles.container}>
-      <YStack gap="$2">
-        <H2>Login</H2>
+      <View className="gap-2">
+        <Text>Login</Text>
         <Controller
           control={form.control}
           name="username"
@@ -72,9 +71,7 @@ const LoginScreen = ({
             />
           )}
         />
-        <Button onPress={onLogin} disabled={isPending} marginTop="$4">
-          Login
-        </Button>
+        <Button onPress={onLogin} disabled={isPending} title="Login" />
         <View
           style={{
             flexDirection: "row",
@@ -87,11 +84,10 @@ const LoginScreen = ({
             onPress={() => {
               navigation.navigate("Register");
             }}
-          >
-            Register
-          </Button>
+            title="Register"
+          />
         </View>
-      </YStack>
+      </View>
     </View>
   );
 };

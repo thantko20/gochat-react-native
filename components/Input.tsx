@@ -1,21 +1,20 @@
 import { ComponentProps } from "react";
-import { Label, Input as TInput, YStack } from "tamagui";
+import { Text, TextInput, View } from "react-native";
 
-type Props = Omit<ComponentProps<typeof TInput>, "error"> & {
+type Props = ComponentProps<typeof TextInput> & {
   error?: string | boolean;
   label?: string;
 };
 
 const Input = ({ error, label, ...props }: Props) => {
   return (
-    <YStack gap={1}>
-      {label && (
-        <Label fontSize="$5" fontWeight={"700"}>
-          {label}
-        </Label>
+    <View className="gap-2">
+      {label && <Text className="font-sembold">{label}</Text>}
+      <TextInput {...props} className="py-1 px-2 bg-neutral-200 rounded" />
+      {typeof error === "string" && (
+        <Text className="text-red-500">{error}</Text>
       )}
-      <TInput {...props} />
-    </YStack>
+    </View>
   );
 };
 

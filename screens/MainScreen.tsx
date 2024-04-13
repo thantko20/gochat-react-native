@@ -1,9 +1,8 @@
-import { ScrollView, View, TouchableOpacity } from "react-native";
+import { ScrollView, View, TouchableOpacity, Text, Button } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { pb } from "../lib/pocketbase";
 import { User } from "../types/user";
-import { Button, Text } from "tamagui";
 
 const MainScreen = ({
   navigation
@@ -24,9 +23,8 @@ const MainScreen = ({
           queryClient.removeQueries();
           pb.authStore.clear();
         }}
-      >
-        Log Out
-      </Button>
+        title="Logout"
+      />
 
       {data ? (
         <ScrollView>
