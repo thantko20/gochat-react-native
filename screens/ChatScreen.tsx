@@ -10,7 +10,9 @@ import {
   RecordSubscription
 } from "pocketbase";
 import { useQueryClient } from "@tanstack/react-query";
-import { View, Text, TextInput, Button } from "react-native";
+import { View, Text, TextInput, Button, FlatList } from "react-native";
+import Input from "../components/Input";
+import clsx from "clsx";
 
 const Message = ({
   message,
@@ -22,9 +24,15 @@ const Message = ({
   return (
     <View
       key={message.id}
-      className="p-2 bg-green-100 rounded-sm w-1/2 self-start"
+      className={clsx(
+        "p-2 rounded-md w-[49%]",
+        user?.id === message.sender
+          ? "self-end bg-blue-500"
+          : "self-start bg-neutral-400",
+        message.isSending && "bg-blue-300"
+      )}
     >
-      <Text>{message.body}</Text>
+      <Text className="text-white">{message.body}</Text>
     </View>
   );
 };
@@ -43,7 +51,14 @@ const ChatScreen = ({ route, navigation }: any) => {
 
   const key = ["message", filters];
 
-  const { data: messages, isLoading, refetch } = useGetMessages(filters);
+  const {
+    data: messages,
+    isLoading,
+    refetch,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage
+  } = useGetMessages(filters);
 
   const { mutateAsync } = useSendMesssage(filters);
 
@@ -96,27 +111,43 @@ const ChatScreen = ({ route, navigation }: any) => {
     await mutateAsync({
       message,
       receiverId: userId,
-      senderId: user!.id
+      senderId: user!.id,
+      optimisticId: Date.now().toString()
     });
     setMessage("");
   };
 
   return (
-    <View flex={1}>
+    <View className="flex-1">
       {isLoading ? <Text>Loading Chat!</Text> : null}
-      <View className="flex-1 flex-col-reverse p-2 gap-2">
-        {messages?.items.map((message) => (
-          <Message key={message.id} message={message} user={user} />
-        ))}
-      </View>
-      <View className="gap-12 p-4 bg-white" gap={12} padding="$4" bg="white">
-        <TextInput
-          className="flex-1"
-          placeholder="say hi!"
-          value={message}
-          onChangeText={setMessage}
-        />
-        <Button onPress={onSend} title="Send" />
+      {isFetchingNextPage ? <Text>Fetching next page!</Text> : null}
+      <FlatList
+        inverted
+        className="flex-1 px-2"
+        contentContainerStyle={{
+          gap: 10
+          // flex: 1
+        }}
+        data={messages || []}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <Message message={item} user={user} />}
+        onEndReached={() => {
+          if (hasNextPage) {
+            fetchNextPage();
+          }
+        }}
+      />
+      <View className="flex-row bg-white flex-shrink-0 p-2">
+        <View className="flex-1">
+          <Input
+            placeholder="say hi!"
+            value={message}
+            onChangeText={setMessage}
+          />
+        </View>
+        <View className="flex-shrink-0 ml-2">
+          <Button onPress={onSend} title="Send" />
+        </View>
       </View>
     </View>
   );

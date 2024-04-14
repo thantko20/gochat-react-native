@@ -1,7 +1,13 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from "@tanstack/react-query";
 import { pb } from "../lib/pocketbase";
 import { Message } from "../types/message";
-import { ListResult } from "pocketbase";
+import { ListResult, RecordModel } from "pocketbase";
 
 export const useGetMessages = (query: {
   userOrChatId: string;
@@ -11,14 +17,25 @@ export const useGetMessages = (query: {
 }) => {
   const { userOrChatId, perPage = 20, page = 1 } = query;
 
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["messages", query],
-    queryFn: () =>
-      pb.collection("messages").getList<Message>(page, perPage, {
+    queryFn: ({ pageParam }) =>
+      pb.collection("messages").getList<Message>(pageParam, perPage, {
         filter: `(chat.users.id ?= '${userOrChatId}' && chat.type = 'normal') || chat.users.id ?= '${userOrChatId}'`,
         expand: "sender",
         sort: "-created"
-      })
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages, lastPageParam, allPageParams) => {
+      if (lastPage.page >= lastPage.totalPages) {
+        return undefined;
+      }
+
+      return lastPage.page + 1;
+    },
+    select: (inifiniteMessages) => {
+      return inifiniteMessages.pages.map((page) => page.items).flat();
+    }
   });
 };
 
@@ -29,11 +46,13 @@ export const useSendMesssage = (cachedQueryKey: any) => {
     mutationFn: async ({
       senderId,
       receiverId,
-      message
+      message,
+      optimisticId = ""
     }: {
       receiverId: string;
       senderId: string;
       message: string;
+      optimisticId: string;
     }) => {
       if (!message) return;
 
@@ -41,7 +60,8 @@ export const useSendMesssage = (cachedQueryKey: any) => {
         {
           receiver: receiverId,
           sender: senderId,
-          body: message
+          body: message,
+          optimisticId
         },
         {
           expand: "sender"
@@ -51,31 +71,70 @@ export const useSendMesssage = (cachedQueryKey: any) => {
     onMutate: async (newMessage) => {
       await queryClient.cancelQueries({ queryKey: key });
 
-      const prev = queryClient.getQueryData(key);
+      const prev =
+        queryClient.getQueryData<InfiniteData<ListResult<Message>>>(key);
+      console.log(prev);
 
-      queryClient.setQueryData(key, (old: ListResult<Message>) => {
-        return {
-          items: [
-            {
-              ...newMessage,
-              id: Date.now(),
-              body: newMessage.message,
-              sender: newMessage.senderId,
-              isSending: true
-            },
-            ...old.items
-          ]
-        };
-      });
+      queryClient.setQueryData<InfiniteData<ListResult<Message>>>(
+        key,
+        (old) => {
+          return {
+            pageParams: old?.pageParams || [1],
+            pages: old?.pages.map((page) => {
+              if (page.page === 1) {
+                return {
+                  ...page,
+                  items: [
+                    {
+                      ...newMessage,
+                      id: Date.now(),
+                      body: newMessage.message,
+                      sender: newMessage.senderId,
+                      isSending: true
+                    },
+                    ...page.items
+                  ]
+                };
+              }
+              return page;
+            })
+          } as InfiniteData<ListResult<Message>>;
+        }
+      );
 
       return { prev };
     },
     onError: (err, newMessage, context) => {
-      console.log({ err });
       queryClient.setQueryData(key, context?.prev);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: key });
+    onSuccess: (data) => {
+      queryClient.setQueryData<InfiniteData<ListResult<Message>>>(
+        key,
+        (old) => {
+          return {
+            pageParams: old?.pageParams || [1],
+            pages: old?.pages.map((page) => {
+              if (page.page === 1) {
+                const tmpItems = page.items;
+                const idx = tmpItems.findIndex(
+                  (item) => item.optimisticId === data?.optimisticId
+                );
+                console.log({ data, item: tmpItems[idx] });
+
+                if (idx >= 0) {
+                  tmpItems[idx] = data as unknown as Message;
+                }
+                return {
+                  ...page,
+                  items: tmpItems
+                };
+              }
+              return page;
+            })
+          } as InfiniteData<ListResult<Message>>;
+        }
+      );
+      // queryClient.invalidateQueries({ queryKey: ["messages"] });
     }
   });
 };

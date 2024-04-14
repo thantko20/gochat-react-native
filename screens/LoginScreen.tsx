@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text, Button } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,6 +6,7 @@ import { loginSchema } from "../schemas/auth.schema";
 import { useEffect } from "react";
 import Input from "../components/Input";
 import { useLoginMutation } from "../api/auth";
+import { Button } from "../components/Button";
 
 const LoginScreen = ({
   navigation
@@ -71,7 +72,9 @@ const LoginScreen = ({
             />
           )}
         />
-        <Button onPress={onLogin} disabled={isPending} title="Login" />
+        <Button onPress={onLogin} disabled={isPending}>
+          Login
+        </Button>
         <View
           style={{
             flexDirection: "row",
@@ -84,8 +87,9 @@ const LoginScreen = ({
             onPress={() => {
               navigation.navigate("Register");
             }}
-            title="Register"
-          />
+          >
+            Register
+          </Button>
         </View>
       </View>
     </View>

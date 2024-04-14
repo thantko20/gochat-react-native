@@ -6,5 +6,5 @@ export type Message = {
   body: string;
   expand: { sender: User };
   isSending?: boolean;
-  tmpId?: string;
+  optimisticId?: string;
 };
