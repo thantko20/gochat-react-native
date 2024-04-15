@@ -6,7 +6,7 @@ import {
   useQueryClient
 } from "@tanstack/react-query";
 import { pb } from "../lib/pocketbase";
-import { Message } from "../types/message";
+import { Message } from "../types/messages.types";
 import { ListResult, RecordModel } from "pocketbase";
 
 export const useGetMessages = (query: {
@@ -21,7 +21,7 @@ export const useGetMessages = (query: {
     queryKey: ["messages", query],
     queryFn: ({ pageParam }) =>
       pb.collection("messages").getList<Message>(pageParam, perPage, {
-        filter: `(chat.users.id ?= '${userOrChatId}' && chat.type = 'normal') || chat.users.id ?= '${userOrChatId}'`,
+        filter: `(chat.users.id ?= '${userOrChatId}' && chat.type = 'normal') || chat.users.id ?= '${userOrChatId}' || chat.id = '${userOrChatId}'`,
         expand: "sender",
         sort: "-created"
       }),
@@ -134,7 +134,6 @@ export const useSendMesssage = (cachedQueryKey: any) => {
           } as InfiniteData<ListResult<Message>>;
         }
       );
-      // queryClient.invalidateQueries({ queryKey: ["messages"] });
     }
   });
 };

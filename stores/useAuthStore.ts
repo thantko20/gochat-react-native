@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { pb } from "../lib/pocketbase";
 import { AuthModel } from "pocketbase";
-import { User } from "../types/user";
+import { User } from "../types/users.type";
 
 type AuthStoreState = {
   user: User | null;

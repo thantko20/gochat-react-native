@@ -12,25 +12,16 @@ import { useEffect } from "react";
 import useAuthStore from "./stores/useAuthStore";
 import { pb } from "./lib/pocketbase";
 import ChatScreen from "./screens/ChatScreen";
-import { useFonts } from "expo-font";
+import { Text } from "react-native";
 
 const Stack = createStackNavigator();
 
 export default function App() {
-  const { user, onAuthChange, token } = useAuthStore();
-
-  // const [loaded] = useFonts({
-  //   Inter: require("@tamagui/font-inter/otf/Inter-Medium.otf"),
-  //   InterBold: require("@tamagui/font-inter/otf/Inter-Bold.otf")
-  // });
+  const { user, onAuthChange } = useAuthStore();
 
   useEffect(() => {
     return pb.authStore.onChange(onAuthChange);
   }, []);
-
-  // if (!loaded) {
-  //   return null;
-  // }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -46,7 +37,13 @@ export default function App() {
             ></Stack.Screen>
           ) : (
             <>
-              <Stack.Screen name="Main" component={MainScreen}></Stack.Screen>
+              <Stack.Screen
+                name="Main"
+                component={MainScreen}
+                options={() => ({
+                  headerRight: () => <Text>Hi</Text>
+                })}
+              ></Stack.Screen>
               <Stack.Screen
                 name="Chat"
                 component={ChatScreen}

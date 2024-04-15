@@ -1,4 +1,4 @@
-import { User } from "./user";
+import { User } from "./users.type";
 
 export type Message = {
   id: string;

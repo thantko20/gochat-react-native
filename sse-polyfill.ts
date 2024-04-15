@@ -207,6 +207,5 @@
 // })(globalThis);
 
 import EventSource from "react-native-sse";
-// import EventSource from "react-native-oksse";
 
 global.EventSource = EventSource;

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useAuthStore from "../stores/useAuthStore";
 import { useGetMessages, useSendMesssage } from "../api/messages";
-import { Message as TMessage } from "../types/message";
-import { User } from "../types/user";
+import { Message as TMessage } from "../types/messages.types";
 import { pb } from "../lib/pocketbase";
 import {
   ClientResponseError,
@@ -10,42 +9,19 @@ import {
   RecordSubscription
 } from "pocketbase";
 import { useQueryClient } from "@tanstack/react-query";
-import { View, Text, TextInput, Button, FlatList } from "react-native";
+import { View, Button } from "react-native";
 import Input from "../components/Input";
-import clsx from "clsx";
-
-const Message = ({
-  message,
-  user
-}: {
-  message: TMessage;
-  user: User | null;
-}) => {
-  return (
-    <View
-      key={message.id}
-      className={clsx(
-        "p-2 rounded-md w-[49%]",
-        user?.id === message.sender
-          ? "self-end bg-blue-500"
-          : "self-start bg-neutral-400",
-        message.isSending && "bg-blue-300"
-      )}
-    >
-      <Text className="text-white">{message.body}</Text>
-    </View>
-  );
-};
+import { MessagesContainer } from "../components/MessagesContainer";
 
 const ChatScreen = ({ route, navigation }: any) => {
-  const { userId } = route.params;
+  const { userId, chatId } = route.params;
 
   const [message, setMessage] = useState("");
 
   const { user } = useAuthStore();
 
   const filters = {
-    userOrChatId: userId,
+    userOrChatId: chatId || userId,
     currentUserId: user?.id
   };
 
@@ -66,8 +42,6 @@ const ChatScreen = ({ route, navigation }: any) => {
 
   useEffect(() => {
     const subscriptionHandler = (data: RecordSubscription<TMessage>) => {
-      console.log(data.action);
-      console.log(data.record);
       if (data.record.sender !== user?.id) {
         const exist = queryClient.getQueryData(key);
         if (!exist) {
@@ -119,23 +93,12 @@ const ChatScreen = ({ route, navigation }: any) => {
 
   return (
     <View className="flex-1">
-      {isLoading ? <Text>Loading Chat!</Text> : null}
-      {isFetchingNextPage ? <Text>Fetching next page!</Text> : null}
-      <FlatList
-        inverted
-        className="flex-1 px-2"
-        contentContainerStyle={{
-          gap: 10
-          // flex: 1
-        }}
-        data={messages || []}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <Message message={item} user={user} />}
-        onEndReached={() => {
-          if (hasNextPage) {
-            fetchNextPage();
-          }
-        }}
+      <MessagesContainer
+        messages={messages || []}
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+        isFetchingMore={isFetchingNextPage}
+        isLoadingChat={isLoading}
       />
       <View className="flex-row bg-white flex-shrink-0 p-2">
         <View className="flex-1">

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { pb } from "../lib/pocketbase";
 import { ClientResponseError } from "pocketbase";
+import { Chat, GetChats } from "../types/chats.types";
 
 /**
  *
@@ -16,8 +17,19 @@ export const useGetChat = (id: string) => {
           `(users.id ?= '${id}' && type = 'normal') || id = '${id}'`,
           { expand: "users" }
         ),
-    retry(failureCount, error) {
+    retry(_failureCount, error) {
       return !(error instanceof ClientResponseError && error.status === 404);
     }
+  });
+};
+
+export const useGetChats = (filter?: GetChats) => {
+  const { page = 1, perPage = 20 } = filter || {};
+  return useQuery({
+    queryKey: ["chats", filter],
+    queryFn: () =>
+      pb.collection("chats").getList<Chat>(page, perPage, {
+        expand: "users"
+      })
   });
 };
