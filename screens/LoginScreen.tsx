@@ -7,14 +7,13 @@ import { useEffect } from "react";
 import Input from "../components/Input";
 import { useLoginMutation } from "../api/auth";
 import { Button } from "../components/Button";
+import { useLoader } from "../stores/useLoaderStore";
 
 const LoginScreen = ({
   navigation
 }: {
   navigation: StackNavigationProp<any>;
 }) => {
-  // const { login } = useAuthStore();
-
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -27,9 +26,6 @@ const LoginScreen = ({
 
   const onLogin = form.handleSubmit((data) => {
     mutate(data, {
-      // onSuccess: async (data) => {
-      //   login(data.token);
-      // },
       onError: (error) => {
         console.error(error);
       }
@@ -39,6 +35,8 @@ const LoginScreen = ({
   useEffect(() => {
     form.clearErrors();
   }, [form.clearErrors]);
+
+  useLoader(isPending);
 
   return (
     <View style={styles.container}>

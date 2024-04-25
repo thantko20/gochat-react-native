@@ -12,12 +12,17 @@ import { useEffect } from "react";
 import useAuthStore from "./stores/useAuthStore";
 import { pb } from "./lib/pocketbase";
 import ChatScreen from "./screens/ChatScreen";
-import { Text } from "react-native";
+import { Text, View } from "react-native";
+import { RootStackParamList } from "./types/navigation.types";
+import { useLoaderStore } from "./stores/useLoaderStore";
+import { LoadingOverlay } from "./components/LoadingOverlay";
 
-const Stack = createStackNavigator();
+const RootStack = createStackNavigator<RootStackParamList>();
 
 export default function App() {
   const { user, onAuthChange } = useAuthStore();
+
+  const { isLoading } = useLoaderStore();
 
   useEffect(() => {
     return pb.authStore.onChange(onAuthChange);
@@ -25,35 +30,36 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <LoadingOverlay loading={isLoading} />
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Auth">
+        <RootStack.Navigator initialRouteName="Auth">
           {!user ? (
-            <Stack.Screen
+            <RootStack.Screen
               name="Auth"
               component={AuthStackNavigator}
               options={{
                 headerShown: false
               }}
-            ></Stack.Screen>
+            ></RootStack.Screen>
           ) : (
             <>
-              <Stack.Screen
+              <RootStack.Screen
                 name="Main"
                 component={MainScreen}
                 options={() => ({
                   headerRight: () => <Text>Hi</Text>
                 })}
-              ></Stack.Screen>
-              <Stack.Screen
+              ></RootStack.Screen>
+              <RootStack.Screen
                 name="Chat"
                 component={ChatScreen}
                 options={({ route }) => ({
-                  title: (route.params as { name: string })?.name || "Chat"
+                  title: route.params?.name || "Chat"
                 })}
-              ></Stack.Screen>
+              ></RootStack.Screen>
             </>
           )}
-        </Stack.Navigator>
+        </RootStack.Navigator>
         <StatusBar style="auto" />
       </NavigationContainer>
     </QueryClientProvider>

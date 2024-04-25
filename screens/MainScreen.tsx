@@ -7,6 +7,7 @@ import { Button } from "../components/Button";
 import { useGetChats } from "../api/chats";
 import { Chat } from "../types/chats.types";
 import useAuthStore from "../stores/useAuthStore";
+import { RootStackScreenProps } from "../types/navigation.types";
 
 const ChatItem = ({
   chat,
@@ -40,11 +41,7 @@ const ChatItem = ({
   );
 };
 
-const MainScreen = ({
-  navigation
-}: {
-  navigation: StackNavigationProp<any>;
-}) => {
+const MainScreen = ({ navigation }: RootStackScreenProps<"Main">) => {
   const { user } = useAuthStore();
 
   const { data: chatsData, isLoading: isLoadingChats, error } = useGetChats();
@@ -66,6 +63,7 @@ const MainScreen = ({
         <ScrollView>
           {chatsData.items?.map((chat) => (
             <ChatItem
+              key={chat.id}
               chat={chat}
               currentUser={user}
               navigate={navigation.navigate}

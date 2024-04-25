@@ -9,11 +9,14 @@ import {
   RecordSubscription
 } from "pocketbase";
 import { useQueryClient } from "@tanstack/react-query";
-import { View, Button } from "react-native";
+import { View } from "react-native";
 import Input from "../components/Input";
 import { MessagesContainer } from "../components/MessagesContainer";
+import { Button } from "../components/Button";
+import { RootStackScreenProps } from "../types/navigation.types";
+import { useLoader } from "../stores/useLoaderStore";
 
-const ChatScreen = ({ route, navigation }: any) => {
+const ChatScreen = ({ route }: RootStackScreenProps<"Chat">) => {
   const { userId, chatId } = route.params;
 
   const [message, setMessage] = useState("");
@@ -91,8 +94,10 @@ const ChatScreen = ({ route, navigation }: any) => {
     setMessage("");
   };
 
+  useLoader(isLoading);
+
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-slate-200">
       <MessagesContainer
         messages={messages || []}
         fetchNextPage={fetchNextPage}
@@ -109,7 +114,7 @@ const ChatScreen = ({ route, navigation }: any) => {
           />
         </View>
         <View className="flex-shrink-0 ml-2">
-          <Button onPress={onSend} title="Send" />
+          <Button onPress={onSend}>Send</Button>
         </View>
       </View>
     </View>
