@@ -15,6 +15,8 @@ import { MessagesContainer } from "../components/MessagesContainer";
 import { Button } from "../components/Button";
 import { RootStackScreenProps } from "../types/navigation.types";
 import { useLoader } from "../stores/useLoaderStore";
+import { IconButton } from "../components/IconButton";
+import { Feather } from "@expo/vector-icons";
 
 const ChatScreen = ({ route }: RootStackScreenProps<"Chat">) => {
   const { userId, chatId } = route.params;
@@ -114,7 +116,10 @@ const ChatScreen = ({ route }: RootStackScreenProps<"Chat">) => {
           />
         </View>
         <View className="flex-shrink-0 ml-2">
-          <Button onPress={onSend}>Send</Button>
+          <IconButton
+            onPress={onSend}
+            icon={<Feather name="send" size={24} color={"white"} />}
+          />
         </View>
       </View>
     </View>

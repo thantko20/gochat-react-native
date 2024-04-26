@@ -1,53 +1,27 @@
-import { ScrollView, View, TouchableOpacity, Text } from "react-native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ScrollView, View } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { pb } from "../lib/pocketbase";
-import { User } from "../types/users.type";
 import { Button } from "../components/Button";
 import { useGetChats } from "../api/chats";
-import { Chat } from "../types/chats.types";
 import useAuthStore from "../stores/useAuthStore";
 import { RootStackScreenProps } from "../types/navigation.types";
-
-const ChatItem = ({
-  chat,
-  currentUser,
-  navigate
-}: {
-  chat: Chat;
-  currentUser: User | null;
-  navigate: StackNavigationProp<any>["navigate"];
-}) => {
-  const otherUser = chat.expand.users.find(
-    (user) => user.id !== currentUser?.id
-  );
-  if (!otherUser) {
-    return null;
-  }
-  return (
-    <TouchableOpacity
-      key={otherUser.id}
-      onPress={() =>
-        navigate("Chat", {
-          userId: otherUser.id,
-          name: otherUser.name,
-          chatId: chat.id
-        })
-      }
-      className="p-4 w-full divide-y"
-    >
-      <Text className="font-semibold text-lg">{otherUser.username}</Text>
-    </TouchableOpacity>
-  );
-};
+import { useLoader } from "../stores/useLoaderStore";
+import { useEffect } from "react";
+import { ChatItem } from "../components/ChatItem";
 
 const MainScreen = ({ navigation }: RootStackScreenProps<"Main">) => {
   const { user } = useAuthStore();
 
   const { data: chatsData, isLoading: isLoadingChats, error } = useGetChats();
-  console.log(chatsData);
+  useLoader(isLoadingChats);
 
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (error) {
+      console.log("There was an error in getting chats: ", error.message);
+    }
+  }, [error]);
 
   return (
     <View>
@@ -61,12 +35,13 @@ const MainScreen = ({ navigation }: RootStackScreenProps<"Main">) => {
       </Button>
       {chatsData ? (
         <ScrollView>
-          {chatsData.items?.map((chat) => (
+          {chatsData.items?.map((chat, idx) => (
             <ChatItem
               key={chat.id}
               chat={chat}
               currentUser={user}
               navigate={navigation.navigate}
+              isLastItem={idx === chatsData.items.length - 1}
             />
           ))}
         </ScrollView>

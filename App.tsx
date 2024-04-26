@@ -32,7 +32,18 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <LoadingOverlay loading={isLoading} />
       <NavigationContainer>
-        <RootStack.Navigator initialRouteName="Auth">
+        <RootStack.Navigator
+          initialRouteName="Auth"
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: "#3b82f6"
+            },
+            headerTitleStyle: {
+              color: "white"
+            },
+            headerTintColor: "white"
+          }}
+        >
           {!user ? (
             <RootStack.Screen
               name="Auth"
@@ -46,9 +57,7 @@ export default function App() {
               <RootStack.Screen
                 name="Main"
                 component={MainScreen}
-                options={() => ({
-                  headerRight: () => <Text>Hi</Text>
-                })}
+                op
               ></RootStack.Screen>
               <RootStack.Screen
                 name="Chat"

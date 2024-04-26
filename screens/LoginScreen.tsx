@@ -39,9 +39,12 @@ const LoginScreen = ({
   useLoader(isPending);
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 justify-center items-center px-12">
+      <Text className="self-start mb-10 text-3xl font-bold">GoChat ✨</Text>
+      <Text className="self-start mb-8 text-2xl font-bold">
+        Login to Continue
+      </Text>
       <View className="gap-2">
-        <Text>Login</Text>
         <Controller
           control={form.control}
           name="username"
@@ -85,6 +88,7 @@ const LoginScreen = ({
             onPress={() => {
               navigation.navigate("Register");
             }}
+            variant="ghost"
           >
             Register
           </Button>
@@ -93,17 +97,5 @@ const LoginScreen = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  formContainer: {
-    width: "80%",
-    gap: 0
-  }
-});
 
 export default LoginScreen;
