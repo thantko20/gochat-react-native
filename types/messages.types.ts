@@ -8,3 +8,10 @@ export type Message = {
   isSending?: boolean;
   optimisticId?: string;
 };
+
+export type GetMessages = {
+  userOrChatId: string;
+  currentUserId?: string;
+  perPage?: number;
+  page?: number;
+};

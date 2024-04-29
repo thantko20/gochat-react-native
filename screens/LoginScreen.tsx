@@ -39,7 +39,7 @@ const LoginScreen = ({
   useLoader(isPending);
 
   return (
-    <View className="flex-1 justify-center items-center px-12">
+    <View className="flex-1 font-inter justify-center items-center px-12">
       <Text className="self-start mb-10 text-3xl font-bold">GoChat ✨</Text>
       <Text className="self-start mb-8 text-2xl font-bold">
         Login to Continue
@@ -97,5 +97,11 @@ const LoginScreen = ({
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    fontFamily: "Inter"
+  }
+});
 
 export default LoginScreen;

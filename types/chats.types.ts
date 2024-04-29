@@ -1,3 +1,4 @@
+import { Message } from "./messages.types";
 import { User } from "./users.type";
 
 export type GetChats = {
@@ -13,5 +14,6 @@ export type Chat = {
   updated: string;
   expand: {
     users: User[];
+    lastMessage: Message;
   };
 };

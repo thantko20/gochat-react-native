@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useAuthStore from "../stores/useAuthStore";
-import { useGetMessages, useSendMesssage } from "../api/messages";
-import { Message as TMessage } from "../types/messages.types";
+import { messagesKeys, useGetMessages, useSendMesssage } from "../api/messages";
+import { GetMessages, Message as TMessage } from "../types/messages.types";
 import { pb } from "../lib/pocketbase";
 import {
   ClientResponseError,
@@ -25,12 +25,12 @@ const ChatScreen = ({ route }: RootStackScreenProps<"Chat">) => {
 
   const { user } = useAuthStore();
 
-  const filters = {
+  const filters: GetMessages = {
     userOrChatId: chatId || userId,
     currentUserId: user?.id
   };
 
-  const key = ["message", filters];
+  const key = messagesKeys.list(filters);
 
   const {
     data: messages,
@@ -47,6 +47,7 @@ const ChatScreen = ({ route }: RootStackScreenProps<"Chat">) => {
 
   useEffect(() => {
     const subscriptionHandler = (data: RecordSubscription<TMessage>) => {
+      console.log(data.record);
       if (data.record.sender !== user?.id) {
         const exist = queryClient.getQueryData(key);
         if (!exist) {

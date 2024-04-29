@@ -6,19 +6,19 @@ import {
   useQueryClient
 } from "@tanstack/react-query";
 import { pb } from "../lib/pocketbase";
-import { Message } from "../types/messages.types";
+import { GetMessages, Message } from "../types/messages.types";
 import { ListResult, RecordModel } from "pocketbase";
 
-export const useGetMessages = (query: {
-  userOrChatId: string;
-  currentUserId?: string;
-  perPage?: number;
-  page?: number;
-}) => {
+export const messagesKeys = {
+  list: (query: GetMessages) => ["messages", query],
+  optimisticList: (cached: {}) => ["messages"]
+};
+
+export const useGetMessages = (query: GetMessages) => {
   const { userOrChatId, perPage = 20, page = 1 } = query;
 
   return useInfiniteQuery({
-    queryKey: ["messages", query],
+    queryKey: messagesKeys.list(query),
     queryFn: ({ pageParam }) =>
       pb.collection("messages").getList<Message>(pageParam, perPage, {
         filter: `(chat.users.id ?= '${userOrChatId}' && chat.type = 'normal') || chat.users.id ?= '${userOrChatId}' || chat.id = '${userOrChatId}'`,
@@ -39,9 +39,9 @@ export const useGetMessages = (query: {
   });
 };
 
-export const useSendMesssage = (cachedQueryKey: any) => {
+export const useSendMesssage = (cachedQueryKey: GetMessages) => {
   const queryClient = useQueryClient();
-  const key = ["messages", cachedQueryKey];
+  const key = messagesKeys.list(cachedQueryKey);
   return useMutation({
     mutationFn: async ({
       senderId,
@@ -104,7 +104,7 @@ export const useSendMesssage = (cachedQueryKey: any) => {
 
       return { prev };
     },
-    onError: (err, newMessage, context) => {
+    onError: (_err, _newMessage, context) => {
       queryClient.setQueryData(key, context?.prev);
     },
     onSuccess: (data) => {
