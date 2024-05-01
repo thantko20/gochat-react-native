@@ -63,18 +63,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <LoadingOverlay loading={isLoading} />
       <NavigationContainer theme={defaultTheme}>
-        <RootStack.Navigator
-          initialRouteName="Auth"
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: "#3b82f6"
-            },
-            headerTitleStyle: {
-              color: "white"
-            },
-            headerTintColor: "white"
-          }}
-        >
+        <RootStack.Navigator initialRouteName="Auth">
           {!user ? (
             <RootStack.Screen
               name="Auth"

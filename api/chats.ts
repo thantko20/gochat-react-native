@@ -34,7 +34,9 @@ export const useGetChats = (filter?: GetChats) => {
     queryKey: chatKeys.list(filter),
     queryFn: () =>
       pb.collection("chats").getList<Chat>(page, perPage, {
-        expand: "users,lastMessage"
-      })
+        expand: "lastMessage,users",
+        sort: "-updated"
+      }),
+    staleTime: 0
   });
 };

@@ -21,6 +21,11 @@ export const ChatItem = ({
   if (!otherUser) {
     return null;
   }
+
+  const lastMessage = chat.expand.lastMessage?.body;
+  const isUserLastMessageSender =
+    chat.expand.lastMessage?.sender === currentUser?.id;
+
   return (
     <Pressable
       key={otherUser.id}
@@ -35,11 +40,15 @@ export const ChatItem = ({
         color: "#00000013"
       }}
       className={clsx(
-        "p-4 w-full divide-y",
+        "p-4 w-full",
         isLastItem ? "border-none" : "border-b border-neutral-300"
       )}
     >
       <Text className="font-semibold text-lg">{otherUser.name}</Text>
+      <Text>
+        {isUserLastMessageSender && <Text className="font-medium">You:</Text>}{" "}
+        {lastMessage}
+      </Text>
     </Pressable>
   );
 };

@@ -8,15 +8,11 @@ import { RootStackScreenProps } from "../types/navigation.types";
 import { useLoader } from "../stores/useLoaderStore";
 import { useEffect } from "react";
 import { ChatItem } from "../components/ChatItem";
-import {
-  ClientResponseError,
-  ListResult,
-  RecordSubscription
-} from "pocketbase";
+import { ClientResponseError, RecordSubscription } from "pocketbase";
 import { Chat, GetChats } from "../types/chats.types";
 
 const useChatSubscriptions = (query?: GetChats | undefined) => {
-  const { refetch } = useGetChats();
+  const { refetch } = useGetChats(query);
   const { user } = useAuthStore();
   useEffect(() => {
     const subscriptionHandler = (data: RecordSubscription<Chat>) => {
@@ -52,7 +48,7 @@ const MainScreen = ({ navigation }: RootStackScreenProps<"Main">) => {
   const { user } = useAuthStore();
 
   const { data: chatsData, isLoading: isLoadingChats, error } = useGetChats();
-  console.log(chatsData?.items[0]?.expand?.lastMessage);
+  console.log(Object.keys(chatsData?.items[0]?.expand || {}));
   useLoader(isLoadingChats);
 
   const queryClient = useQueryClient();
